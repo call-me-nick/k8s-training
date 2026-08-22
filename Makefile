@@ -27,6 +27,7 @@ RESOURCES    := ./STARTUP_RESOURCES
 	kubectl get all -A
 	kubectl get nodes
 	kubectl cluster-info --context kind-edu
+	./bin/wait-4-healthy-pods.sh
 	@echo '#### Cluster created. Start k9s now, so you can watch next steps.  (make k9s-all-pods)'
 	@echo '   *** It is SUPER IMPORTANT to pay attention to error messages in next steps. ***'
 
