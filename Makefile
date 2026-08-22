@@ -17,7 +17,7 @@ RESOURCES    := ./STARTUP_RESOURCES
 .PHONY: create
 # https://support.jamasoftware.com/hc/en-us/articles/25363403125517-Failed-to-create-fsnotify-watcher-too-many-open-files
 1-create: FS_INOTIFY := 1100100
-1-create: ## "edu" class-use cluster.
+1-create: ## "edu" class-use Kind cluster.
 	@echo "******* Temporarily setting open files to rediculous values (this will sudo)"
 	@echo "******* This Makefile was written on XUbuntu 24.04.4 LTS"
 	sudo sysctl -w fs.inotify.max_user_watches=$(FS_INOTIFY)
@@ -124,7 +124,7 @@ uninstall-headlamp: ## Completely remove headlamp.
 
 destroy: delete
 .PHONY: delete
-delete: ## Delete the "edu" cluster.
+delete: ## Delete the "edu" Kind cluster.
 	kind delete cluster --name $(CLUSTER_NAME)
 	@echo "Let things \"cool\" for a few minutes before doing another 'make create'"
 
@@ -142,6 +142,10 @@ mon-cluster: ## Overall monitoring of the cluster
 .PHONY: k9s-all-pods
 k9s-all-pods: ## Watch all pods in all namespaces
 	k9s -A -c pod
+
+.PHONY: dnsutils
+dnsutils: ## Shell into the dnsutils pod and dig around.
+	kubectl -n kube-tools exec -it dnsutils -- /bin/bash
 
 .PHONY: ipv4-in-use
 ipv4-in-use: MY_CIDR := $(shell ip addr | grep -E 'inet .* global dynamic ' | awk '{print $$2}')
@@ -164,7 +168,7 @@ checkpush: ## Find modified files, add, commit and push
 .PHONY: build-utils
 build-utils: VERSION := $(shell date +%Y%m%d%H%M)
 build-utils: BASE_TAG := "tsutils"
-build-utils: ## docker build a network ts (TroubleShooting) container
+build-utils: ## Build our own network troubleshooting container
 	@echo Nothing here yet.
 	docker build --platform linux/amd64 --progress=plain --no-cache \
 		--tag $(BASE_TAG):$(VERSION) \
