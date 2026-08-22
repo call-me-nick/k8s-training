@@ -1,0 +1,12 @@
+{
+    "debug": false,
+    "default-address-pools": [
+        {
+            "base": "10.0.0.0/8",
+            "size": 24
+        }
+    ],
+    "registry-mirrors": ["https://mirror.gcr.io"],
+    "ipv6": true,
+    "fixed-cidr-v6": "2001:db8:1::/64"
+}

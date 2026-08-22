@@ -1,0 +1,99 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    deployment.kubernetes.io/revision: "1"
+  creationTimestamp: "2026-07-23T14:15:38Z"
+  generation: 1
+  labels:
+    k8s-app: tigera-operator
+  name: tigera-operator
+  namespace: tigera-operator
+  resourceVersion: "16830"
+  uid: d5a1fe21-7311-4bb0-9d64-40339b0c5a30
+spec:
+  progressDeadlineSeconds: 600
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      name: tigera-operator
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        k8s-app: tigera-operator
+        name: tigera-operator
+    spec:
+      containers:
+      - command:
+        - operator
+        env:
+        - name: WATCH_NAMESPACE
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.name
+        - name: OPERATOR_NAME
+          value: tigera-operator
+        - name: TIGERA_OPERATOR_INIT_IMAGE_VERSION
+          value: v1.34.0
+        envFrom:
+        - configMapRef:
+            name: kubernetes-services-endpoint
+            optional: true
+        image: quay.io/tigera/operator:v1.34.0
+        imagePullPolicy: IfNotPresent
+        name: tigera-operator
+        resources: {}
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /var/lib/calico
+          name: var-lib-calico
+          readOnly: true
+      dnsPolicy: ClusterFirstWithHostNet
+      hostNetwork: true
+      nodeSelector:
+        kubernetes.io/os: linux
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      serviceAccount: tigera-operator
+      serviceAccountName: tigera-operator
+      terminationGracePeriodSeconds: 60
+      tolerations:
+      - effect: NoExecute
+        operator: Exists
+      - effect: NoSchedule
+        operator: Exists
+      volumes:
+      - hostPath:
+          path: /var/lib/calico
+          type: ""
+        name: var-lib-calico
+status:
+  availableReplicas: 1
+  conditions:
+  - lastTransitionTime: "2026-07-23T14:15:38Z"
+    lastUpdateTime: "2026-07-23T14:15:45Z"
+    message: ReplicaSet "tigera-operator-55855bc785" has successfully progressed.
+    reason: NewReplicaSetAvailable
+    status: "True"
+    type: Progressing
+  - lastTransitionTime: "2026-07-23T16:13:14Z"
+    lastUpdateTime: "2026-07-23T16:13:14Z"
+    message: Deployment has minimum availability.
+    reason: MinimumReplicasAvailable
+    status: "True"
+    type: Available
+  observedGeneration: 1
+  readyReplicas: 1
+  replicas: 1
+  terminatingReplicas: 0
+  updatedReplicas: 1

@@ -1,0 +1,27 @@
+# Exercise 34-07 v3.3.0
+#
+---
+apiVersion: metallb.io/v1beta1
+kind: IPAddressPool
+metadata:
+  name: load-balancer-pool
+  namespace: metallb-system
+# !?  helm install metallb metallb/metallb --namespace metallb-system --create-namespace
+# I0821 15:19:52.508357 2769490 warnings.go:107] "Warning: unrecognized format \"cidr\"
+spec:
+  addresses:
+  #- 172.18.255.225-172.18.255.250
+  # This MUST be in the netblock your Kind cluster is using.
+  # docker network inspect kind -f '{{range.Containers}}{{.Name}} {{.IPv4Address}}{{"\n"}}{{end}}'
+  - 10.255.1.200-10.255.1.220
+
+---
+apiVersion: metallb.io/v1beta1
+kind: L2Advertisement
+metadata:
+  name: load-balancer-pool
+  namespace: metallb-system
+spec:
+  ipAddressPools:
+  - load-balancer-pool
+

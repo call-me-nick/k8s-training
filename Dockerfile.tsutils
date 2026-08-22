@@ -1,0 +1,14 @@
+FROM alpine:latest
+# Build a network troubleshooting container.
+ARG UTILS="\
+    arp-scan \
+    bash \
+    bind-tools \
+    busybox \
+    busybox-extras \
+    curl \
+    iproute2 \
+    vim \
+"
+# busybox + busybox-extras include: telnet, ping, nslookup, ip, wget, arp, netstat
+RUN apk add ${UTILS}
