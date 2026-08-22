@@ -87,7 +87,7 @@ RESOURCES    := ./STARTUP_RESOURCES
 		--serviceaccount=headlamp:headlamp-read-only
 	@echo "# Admin token (24h ttl)" | tee $(tokens)
 	kubectl -n headlamp create token headlamp-admin --duration 86400s | tee -a $(tokens)
-	@echo "# RO token (infinite ttl)" | tee -a $(tokens)
+	@echo "\n# RO token (infinite ttl)" | tee -a $(tokens)
 	kubectl -n headlamp create token headlamp-read-only | tee -a $(tokens)
 	@echo "" >> $(tokens)
 	@echo "Saved tokens to $(tokens)"
