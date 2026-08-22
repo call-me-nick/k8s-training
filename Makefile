@@ -30,6 +30,16 @@ RESOURCES    := ./STARTUP_RESOURCES
 	@echo '#### Cluster created. Start k9s now, so you can watch next steps.  (make k9s-all-pods)'
 	@echo '   *** It is SUPER IMPORTANT to pay attention to error messages in next steps. ***'
 
+.PHONY: 1a-install-metrics-server
+1a-install-metrics-server: IMS_URL := https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
+1a-install-metrics-server: ## Optionally: install metrics-server
+	kubectl apply -f $(IMS_URL)
+	kubectl patch deployment metrics-server -n kube-system --type=json -p='[ \
+  		{"op":"add","path":"/spec/template/spec/containers/0/args/-","value":"--kubelet-insecure-tls"}, \
+  		{"op":"add","path":"/spec/template/spec/containers/0/args/-","value":"--kubelet-preferred-address-types=InternalIP"} \
+	]'
+	@echo "When this starts, you can 'kubectl top nodes'"
+
 # CALICO_OPERATOR_MANIFEST="https://raw.githubusercontent.com/projectcalico/calico/v3.28.0/manifests/tigera-operator.yaml"
 2-add-cni: CALICO_OPERATOR_MANIFEST := "$(RESOURCES)/tigera-operator.yaml"
 2-add-cni: ## Add Calico CNI (Container Network Interface - after cluster create)
