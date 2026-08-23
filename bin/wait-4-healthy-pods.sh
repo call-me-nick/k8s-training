@@ -1,5 +1,7 @@
 #!/bin/bash
 SLEEP=10s
+# User may want to sleep for a bit before checking.
+if [[ -n "$1" ]]; then sleep "$1" ; fi
 echo "Waiting for all pods in all namespaces to become healthy."
 start_epoch=$(date +%s)
 while true; do

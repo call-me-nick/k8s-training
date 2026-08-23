@@ -39,6 +39,7 @@ RESOURCES    := ./STARTUP_RESOURCES
   		{"op":"add","path":"/spec/template/spec/containers/0/args/-","value":"--kubelet-insecure-tls"}, \
   		{"op":"add","path":"/spec/template/spec/containers/0/args/-","value":"--kubelet-preferred-address-types=InternalIP"} \
 	]'
+	./bin/wait-4-healthy-pods.sh
 	@echo "When this starts, you can 'kubectl top nodes'"
 
 # CALICO_OPERATOR_MANIFEST="https://raw.githubusercontent.com/projectcalico/calico/v3.28.0/manifests/tigera-operator.yaml"
@@ -47,9 +48,9 @@ RESOURCES    := ./STARTUP_RESOURCES
 	kubectl apply -f $(CALICO_OPERATOR_MANIFEST) --server-side --force-conflicts
 	kubectl apply -f $(RESOURCES)/calico-custom-config.yaml --server-side --field-manager=calico-config
 	kubectl apply -f $(RESOURCES)/dnsutils.yaml
-	@echo "WAITING 3 long MINUTES: Let Calico spin up."
+	@echo "WAITING ~3 long MINUTES: Let Calico spin up."
 	@echo "You have the option of shelling in for diags: kubectl -n kube-tools exec -it dnsutils -- /bin/bash"
-	@sleep 180
+	./bin/wait-4-healthy-pods.sh
 	kubectl get all -A
 
 .PHONY: add-metallb
@@ -60,17 +61,17 @@ RESOURCES    := ./STARTUP_RESOURCES
 		kubectl apply -f -
 	kubectl get configmap kube-proxy -n kube-system -o yaml | grep -iE 'strictARP|ipvs' | grep -v apiVersion
 	kubectl rollout restart daemonset kube-proxy -n kube-system
-	@echo "WAITING 10 SECONDS: Let kube-proxy restart"
-	@sleep 10
+	@echo "WAITING a few SECONDS: Let kube-proxy restart"
+	./bin/wait-4-healthy-pods.sh 5
 	helm repo add metallb https://metallb.github.io/metallb
 	helm repo update
 	helm install metallb metallb/metallb --namespace metallb-system --create-namespace
-	@echo "WAITING 3 long MINUTES: Let metallb spin up. "
+	@echo "WAITING ~3 long MINUTES: Let metallb spin up. "
 	@echo "  While you wait: check to make sure that metallb-conf.yaml is using"
 	@echo "    a small pool of unused IPs in the same range as your 'real' host."
 	@echo "    And, just as important: ensure it binds to the correct network."
 	@echo "    See metallb-conf.yaml for a hint."
-	@sleep 180
+	./bin/wait-4-healthy-pods.sh
 	- kubectl apply -f $(RESOURCES)/metallb-conf.yaml
 	@echo "*** If you got an error for the kubectl apply above, wait a minute and try it again."
 	@sleep 3
