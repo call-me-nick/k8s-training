@@ -9,10 +9,6 @@ while true; do
 	elapsed=$((current_epoch - start_epoch))
 	unhealthy=$(kubectl get pods -A 2>/dev/null | \
 		grep -Ev '^NAMESPACE| Running | Complete ')
-	if (( $? )); then
-		echo "Aborting - Fatal error."
-		exit 1
-	fi
 	if [[ -z "$unhealthy" ]]; then
 		echo "All pods are healthy. It took $elapsed seconds."
 		exit 0
@@ -20,14 +16,11 @@ while true; do
 	echo -e "\n******************\n*** Unhealthy pods discovered: (elapsed:$elapsed seconds):"
 	echo "$unhealthy"
 	nr_nodes=$(kubectl get nodes 2>/dev/null | grep NotReady)
-	if (( $? )); then
-		echo "Aborting - Fatal error."
-		exit 1
-	fi
+	[[ -z "$nr_nodes" ]] && nr_nodes='0'
 	if [[ -n "$nr_nodes" ]]; then
 		echo -e "\n*** Unhealthy nodes discovered:"
 		echo "$nr_nodes"
 	fi
-	echo "*** Checking again in $SLEEP seconds."
+	echo "*** NOT READY - Checking again in $SLEEP seconds."
 	sleep "$SLEEP"
 done
