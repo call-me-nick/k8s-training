@@ -16,10 +16,11 @@ while true; do
 	echo -e "\n******************\n*** Unhealthy pods discovered: (elapsed:$elapsed seconds):"
 	echo "$unhealthy"
 	nr_nodes=$(kubectl get nodes 2>/dev/null | grep NotReady)
-	[[ -z "$nr_nodes" ]] && nr_nodes='0'
 	if [[ -n "$nr_nodes" ]]; then
-		echo -e "\n*** Unhealthy nodes discovered:"
-		echo "$nr_nodes"
+		if [[ -n "$nr_nodes" ]]; then
+			echo -e "\n*** Unhealthy nodes discovered:"
+			echo "$nr_nodes"
+		fi
 	fi
 	echo "*** NOT READY - Checking again in $SLEEP seconds."
 	sleep "$SLEEP"

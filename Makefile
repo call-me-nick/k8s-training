@@ -33,12 +33,11 @@ RESOURCES    := ./STARTUP_RESOURCES
 
 .PHONY: 1a-install-metrics-server
 1a-install-metrics-server: IMS_URL := https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
+1a-install-metrics-server: PATCH1  := '{"op":"add","path":"/spec/template/spec/containers/0/args/-","value":"--kubelet-insecure-tls"}'
+1a-install-metrics-server: PATCH2  := '{"op":"add","path":"/spec/template/spec/containers/0/args/-","value":"--kubelet-preferred-address-types=InternalIP"}'
 1a-install-metrics-server: ## Optionally: install metrics-server
 	kubectl apply -f $(IMS_URL)
-	kubectl patch deployment metrics-server -n kube-system --type=json -p='[ \
-  		{"op":"add","path":"/spec/template/spec/containers/0/args/-","value":"--kubelet-insecure-tls"}, \
-  		{"op":"add","path":"/spec/template/spec/containers/0/args/-","value":"--kubelet-preferred-address-types=InternalIP"} \
-	]'
+	kubectl patch deployment metrics-server -n kube-system --type=json -p='['$(PATCH1)','$(PATCH2)',]'
 	./bin/wait-4-healthy-pods.sh
 	@echo "When this starts, you can 'kubectl top nodes'"
 
