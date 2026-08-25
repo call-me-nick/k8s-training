@@ -10,7 +10,7 @@ jupiter $ cat /etc/docker/daemon.json
     "debug": false,
     "default-address-pools": [
         {
-            "base": "10.255.0.0/8",
+            "base": "10.0.0.0/8",
             "size": 24
         }
     ],
