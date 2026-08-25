@@ -27,19 +27,9 @@ RESOURCES    := ./STARTUP_RESOURCES
 	kubectl get all -A
 	kubectl get nodes
 	kubectl cluster-info --context kind-edu
-	./bin/wait-4-healthy-pods.sh
 	@echo '#### Cluster created. Start k9s now, so you can watch next steps.  (make k9s-all-pods)'
 	@echo '   *** It is SUPER IMPORTANT to pay attention to error messages in next steps. ***'
 
-.PHONY: 1a-install-metrics-server
-1a-install-metrics-server: IMS_URL := https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
-1a-install-metrics-server: PATCH1  := '{"op":"add","path":"/spec/template/spec/containers/0/args/-","value":"--kubelet-insecure-tls"}'
-1a-install-metrics-server: PATCH2  := '{"op":"add","path":"/spec/template/spec/containers/0/args/-","value":"--kubelet-preferred-address-types=InternalIP"}'
-1a-install-metrics-server: ## Optionally: install metrics-server
-	kubectl apply -f $(IMS_URL)
-	kubectl patch deployment metrics-server -n kube-system --type=json -p='['$(PATCH1)','$(PATCH2)',]'
-	./bin/wait-4-healthy-pods.sh
-	@echo "When this starts, you can 'kubectl top nodes'"
 
 # CALICO_OPERATOR_MANIFEST="https://raw.githubusercontent.com/projectcalico/calico/v3.28.0/manifests/tigera-operator.yaml"
 2-add-cni: CALICO_OPERATOR_MANIFEST := "$(RESOURCES)/tigera-operator.yaml"
@@ -51,6 +41,16 @@ RESOURCES    := ./STARTUP_RESOURCES
 	@echo "You have the option of shelling in for diags: kubectl -n kube-tools exec -it dnsutils -- /bin/bash"
 	./bin/wait-4-healthy-pods.sh
 	kubectl get all -A
+
+.PHONY: 2a-install-metrics-server
+2a-install-metrics-server: IMS_URL := https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
+2a-install-metrics-server: PATCH1  := '{"op":"add","path":"/spec/template/spec/containers/0/args/-","value":"--kubelet-insecure-tls"}'
+2a-install-metrics-server: PATCH2  := '{"op":"add","path":"/spec/template/spec/containers/0/args/-","value":"--kubelet-preferred-address-types=InternalIP"}'
+2a-install-metrics-server: ## Optionally: install metrics-server
+	kubectl apply -f $(IMS_URL)
+	kubectl patch deployment metrics-server -n kube-system --type=json -p='['$(PATCH1)','$(PATCH2)',]'
+	./bin/wait-4-healthy-pods.sh
+	@echo "When this starts, you can 'kubectl top nodes'"
 
 .PHONY: add-metallb
 3-add-metallb:  ## Add the MetalLB load balancer (after Calico)
@@ -117,6 +117,10 @@ RESOURCES    := ./STARTUP_RESOURCES
 	kubectl -n ingress-nginx get all
 	kubectl -n ingress-nginx get svc
 	# helm uninstall my-nginx-ingress --namespace ingress-nginx
+
+.PHONY: 99-build-entire-cluster
+99-build-entire-cluster: ## Execute the make targets in numeric order and stand up the entire cluster
+99-build-entire-cluster: 1-create 2-add-cni 2a-install-metrics-server 3-add-metallb 4-add-headlamp 5-add-ingress
 
 .PHONY:
 uninstall-headlamp: ## Completely remove headlamp.
