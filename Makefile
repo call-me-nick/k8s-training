@@ -101,15 +101,19 @@ RESOURCES    := ./STARTUP_RESOURCES
 	@echo "\n# RO token (infinite ttl)" | tee -a $(tokens)
 	kubectl -n headlamp create token headlamp-read-only | tee -a $(tokens)
 	@echo "" >> $(tokens)
+	./bin/wait-4-healthy-pods.sh
 	@echo "Saved tokens to $(tokens)"
 	kubectl -n headlamp get all
 	kubectl -n headlamp get svc headlamp
+	@echo "Check /etc/hosts for something like this: 10.255.1.200 headlamp.local"
+	@echo "Then paste a token into your browser here: http://headlamp.local"
 
 .PHONY: add-ingress
 5-add-ingress:  ### Install the nginx ingress (after headlamp)
 	helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
 	helm repo update
 	helm install my-nginx-ingress ingress-nginx/ingress-nginx --namespace ingress-nginx --create-namespace
+	./bin/wait-4-healthy-pods.sh
 	kubectl -n ingress-nginx get all
 	kubectl -n ingress-nginx get svc
 	# helm uninstall my-nginx-ingress --namespace ingress-nginx

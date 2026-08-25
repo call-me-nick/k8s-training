@@ -24,8 +24,9 @@ jupiter $ cat /etc/docker/daemon.json
 
 Consider installing:
 
-* k9s - Make it easy to dig around in your cluster.
-* kubens - Make it easy to change namespaces.
+* [k9s](https://github.com/derailed/k9s) - Make it easy to dig around in your cluster.
+* [kubens](https://github.com/ahmetb/kubectx) - Make it easy to change namespaces.
+* [dive](https://github.com/wagoodman/dive) - Examine the layers in your container.
 
 There's a troubleshooting image that gets installed into the cluster. Check it out!
 
@@ -42,4 +43,3 @@ Clean up docker:
 Nuke an entire k8s namespace:
 
 `kubectl delete namespace app01-ns --recursive`
-
