@@ -157,19 +157,6 @@ ipv4-in-use: MY_CIDR := $(shell ip addr | grep -E 'inet .* global dynamic ' | aw
 ipv4-in-use: ## Get in-use IPv4 addresses (for config of metallb, maybe?)
 	sudo nmap -sn -n -oG - $(MY_CIDR) 2>/dev/null | grep -iv nmap | awk '{print $$2}' | sort -V
 
-check-push: checkpush
-.PHONY: checkpush
-checkpush: ## Find modified files, add, commit and push
-	@files=$$(git status --porcelain | awk 'substr($$0, 1, 2) ~ /M/ {print substr($$0, 4)}'); \
-	if [ -z "$$files" ]; then \
-		echo "No modified files to commit."; \
-		exit 0; \
-	fi; \
-	git add -- $$files; \
-	git commit -m "Checkpoint $$(date +%Y%m%d.%H%M)"
-	git push
-	git status
-
 .PHONY: build-utils
 build-utils: VERSION := $(shell date +%Y%m%d%H%M)
 build-utils: BASE_TAG := "tsutils"
