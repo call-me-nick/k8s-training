@@ -31,7 +31,6 @@ RESOURCES    := ./STARTUP_RESOURCES
 	@echo '   *** It is SUPER IMPORTANT to pay attention to error messages in next steps. ***'
 
 
-
 # CALICO_OPERATOR_MANIFEST="https://raw.githubusercontent.com/projectcalico/calico/v3.28.0/manifests/tigera-operator.yaml"
 2-add-cni: CALICO_OPERATOR_MANIFEST := "$(RESOURCES)/tigera-operator.yaml"
 2-add-cni: ## Add Calico CNI (Container Network Interface - after cluster create)
@@ -132,12 +131,17 @@ RESOURCES    := ./STARTUP_RESOURCES
 	sudo sysctl -w fs.inotify.max_user_watches=$(FS_INOTIFY)
 	sudo sysctl -w fs.inotify.max_user_instances=$(FS_INOTIFY)
 	sudo sysctl -w fs.inotify.max_queued_events=$(FS_INOTIFY)
-	kind create cluster --name $(CLUSTER_NAME) --config $(RESOURCES)/upgradable-cluster.yaml
+	kind create cluster --config $(RESOURCES)/upgradable-cluster.yaml
 	kubectl get all -A
 	kubectl get nodes
 	kubectl cluster-info --context kind-edu
 	@echo '#### Cluster created. Start k9s now, so you can watch next steps.  (make k9s-all-pods)'
 	@echo '   *** It is SUPER IMPORTANT to pay attention to error messages in next steps. ***'
+
+.PHONY: delete-upgradable
+delete-upgradable: ## Delete the "edu" Kind cluster.
+	kind delete cluster --name upgrade
+	@echo "Let things \"cool\" for a few minutes before doing another 'make create'"
 
 .PHONY:
 uninstall-headlamp: ## Completely remove headlamp.
