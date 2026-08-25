@@ -14,7 +14,7 @@ RESOURCES    := ./STARTUP_RESOURCES
 # Delays are introduced, in case the user gets impatient and
 # tries to create things too quickly (before things are ready).
 #
-.PHONY: create
+.PHONY: 1-create
 # https://support.jamasoftware.com/hc/en-us/articles/25363403125517-Failed-to-create-fsnotify-watcher-too-many-open-files
 1-create: FS_INOTIFY := 1100100
 1-create: ## "edu" class-use Kind cluster.
@@ -29,6 +29,7 @@ RESOURCES    := ./STARTUP_RESOURCES
 	kubectl cluster-info --context kind-edu
 	@echo '#### Cluster created. Start k9s now, so you can watch next steps.  (make k9s-all-pods)'
 	@echo '   *** It is SUPER IMPORTANT to pay attention to error messages in next steps. ***'
+
 
 
 # CALICO_OPERATOR_MANIFEST="https://raw.githubusercontent.com/projectcalico/calico/v3.28.0/manifests/tigera-operator.yaml"
@@ -121,6 +122,22 @@ RESOURCES    := ./STARTUP_RESOURCES
 .PHONY: 99-build-entire-cluster
 99-build-entire-cluster: ## Execute the make targets in numeric order and stand up the entire cluster
 99-build-entire-cluster: 1-create 2-add-cni 2a-install-metrics-server 3-add-metallb 4-add-headlamp 5-add-ingress
+
+.PHONY: 100-create-upgradeable
+# https://support.jamasoftware.com/hc/en-us/articles/25363403125517-Failed-to-create-fsnotify-watcher-too-many-open-files
+100-create-upgradeable: FS_INOTIFY := 1100100
+100-create-upgradeable: ## "edu" class-use Kind cluster, using an old version, so we can upgrade it.
+	@echo "******* Temporarily setting open files to rediculous values (this will sudo)"
+	@echo "******* This Makefile was written on XUbuntu 24.04.4 LTS"
+	sudo sysctl -w fs.inotify.max_user_watches=$(FS_INOTIFY)
+	sudo sysctl -w fs.inotify.max_user_instances=$(FS_INOTIFY)
+	sudo sysctl -w fs.inotify.max_queued_events=$(FS_INOTIFY)
+	kind create cluster --name $(CLUSTER_NAME) --config $(RESOURCES)/upgradable-cluster.yaml
+	kubectl get all -A
+	kubectl get nodes
+	kubectl cluster-info --context kind-edu
+	@echo '#### Cluster created. Start k9s now, so you can watch next steps.  (make k9s-all-pods)'
+	@echo '   *** It is SUPER IMPORTANT to pay attention to error messages in next steps. ***'
 
 .PHONY:
 uninstall-headlamp: ## Completely remove headlamp.
